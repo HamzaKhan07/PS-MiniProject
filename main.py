@@ -13,9 +13,11 @@ root.configure(bg='white')
 canvas = tk.Canvas(width=600, height=350, bg='white', borderwidth=0, highlightthickness=0)
 canvas.grid(columnspan=3, rowspan=3)
 
+model_trained=False
 x_test=np.array([[]])
 y_test=np.array([[]])
 y_predict=np.array([[]])
+model = linear_model.LinearRegression()
 
 # functions
 def check_valid(val):
@@ -26,8 +28,7 @@ def check_valid(val):
         return False
 
 def predict_score():
-    global x_test, y_test, y_predict
-
+    global x_test, y_test, y_predict, model_trained, model
     score=cgpa.get()
 
     if not check_valid(score):
@@ -43,48 +44,56 @@ def predict_score():
         y_test = np.array([[]])
         y_predict = np.array([[]])
     else:
-        # read data
-        data=pd.read_excel('Survey.xlsx')
+        if not model_trained:
+            # read data
+            data=pd.read_excel('Survey.xlsx')
 
-        # extract specific cols
-        cgpa_fy_data=data['CGPA-1year']
-        sgpa_sy_sem1_data=data['SGPA-SY-Sem1']
+            # extract specific cols
+            cgpa_fy_data=data['CGPA-1year']
+            sgpa_sy_sem1_data=data['SGPA-SY-Sem1']
 
-        # convert series into dataframe
-        cgpa_fy_x=cgpa_fy_data.to_numpy()
-        cgpa_fy_x=cgpa_fy_x.reshape(-1, 1)
+            # convert series into dataframe
+            cgpa_fy_x=cgpa_fy_data.to_numpy()
+            cgpa_fy_x=cgpa_fy_x.reshape(-1, 1)
 
-        sgpa_sy1_y=sgpa_sy_sem1_data.to_numpy()
-        sgpa_sy1_y=sgpa_sy1_y.reshape(-1, 1)
+            sgpa_sy1_y=sgpa_sy_sem1_data.to_numpy()
+            sgpa_sy1_y=sgpa_sy1_y.reshape(-1, 1)
 
-        # separate test data and training data
-        cgpa_fy_x_train=cgpa_fy_x[-30:]
-        cgpa_fy_x_test=cgpa_fy_x[0: 30]
+            # separate test data and training data
+            cgpa_fy_x_train=cgpa_fy_x[-30:]
+            cgpa_fy_x_test=cgpa_fy_x[0: 30]
 
-        sgpa_sy1_y_train=sgpa_sy1_y[-30:]
-        sgpa_sy1_y_test=sgpa_sy1_y[0:30]
+            sgpa_sy1_y_train=sgpa_sy1_y[-30:]
+            sgpa_sy1_y_test=sgpa_sy1_y[0:30]
 
-        model=linear_model.LinearRegression()
-        model.fit(cgpa_fy_x_train, sgpa_sy1_y_train)
+            model.fit(cgpa_fy_x_train, sgpa_sy1_y_train)
+            model_trained=True
 
-        sgpa_sy1_y_predict=model.predict(cgpa_fy_x_test)
+            sgpa_sy1_y_predict=model.predict(cgpa_fy_x_test)
 
-        # custom prediction here
-        custom_prediction=model.predict(np.array([[score]], dtype='float'))
-        # print('Custom Prediction: ',custom_prediction)
-        prediction_score=(custom_prediction[0][0])
-        prediction_score=round(prediction_score, 2)
-        prediction_text.set(prediction_score)
+            # custom prediction here
+            custom_prediction=model.predict(np.array([[score]], dtype='float'))
+            # print('Custom Prediction: ',custom_prediction)
+            prediction_score=(custom_prediction[0][0])
+            prediction_score=round(prediction_score, 2)
+            prediction_text.set(prediction_score)
 
-        # derive metrics
-        # print('Mean squared error: ', mean_squared_error(sgpa_sy1_y_test, sgpa_sy1_y_predict))
-        # print('Weight: ', model.coef_)
-        # print('Intercept: ', model.intercept_)
+            # derive metrics
+            # print('Mean squared error: ', mean_squared_error(sgpa_sy1_y_test, sgpa_sy1_y_predict))
+            # print('Weight: ', model.coef_)
+            # print('Intercept: ', model.intercept_)
 
-        # plot
-        x_test=cgpa_fy_x_test
-        y_test=sgpa_sy1_y_test
-        y_predict=sgpa_sy1_y_predict
+            # plot
+            x_test=cgpa_fy_x_test
+            y_test=sgpa_sy1_y_test
+            y_predict=sgpa_sy1_y_predict
+        else:
+            # custom prediction here
+            custom_prediction = model.predict(np.array([[score]], dtype='float'))
+            # print('Custom Prediction: ',custom_prediction)
+            prediction_score = (custom_prediction[0][0])
+            prediction_score = round(prediction_score, 2)
+            prediction_text.set(prediction_score)
 
 def plot_graph():
     global x_test, y_test, y_predict
