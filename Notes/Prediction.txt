@@ -1,0 +1,48 @@
+from sklearn import linear_model, datasets
+from sklearn.metrics import mean_squared_error
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+# read data
+data=pd.read_excel('Survey.xlsx')
+
+# extract specific cols
+cgpa_fy_data=data['CGPA-1year']
+sgpa_sy_sem1_data=data['SGPA-SY-Sem1']
+
+# convert series into dataframe
+cgpa_fy_x=cgpa_fy_data.to_numpy()
+cgpa_fy_x=cgpa_fy_x.reshape(-1, 1)
+
+sgpa_sy1_y=sgpa_sy_sem1_data.to_numpy()
+sgpa_sy1_y=sgpa_sy1_y.reshape(-1, 1)
+
+# separate test data and training data
+cgpa_fy_x_train=cgpa_fy_x[-30:]
+cgpa_fy_x_test=cgpa_fy_x[0: 30]
+
+sgpa_sy1_y_train=sgpa_sy1_y[-30:]
+sgpa_sy1_y_test=sgpa_sy1_y[0:30]
+
+model=linear_model.LinearRegression()
+model.fit(cgpa_fy_x_train, sgpa_sy1_y_train)
+
+sgpa_sy1_y_predict=model.predict(cgpa_fy_x_test)
+
+# custom prediction
+custom_prediction=model.predict(np.array([[9.2], [8.8], [9.5], [10]]))
+print('Custom Prediction: ',custom_prediction)
+
+# derive metrics
+print('Mean squared error: ', mean_squared_error(sgpa_sy1_y_test, sgpa_sy1_y_predict))
+print('Weight: ', model.coef_)
+print('Intercept: ', model.intercept_)
+
+# plot
+plt.scatter(cgpa_fy_x_test, sgpa_sy1_y_test)
+plt.plot(cgpa_fy_x_test, sgpa_sy1_y_predict)
+plt.plot()
+plt.show()
+
+
