@@ -10,7 +10,7 @@ predicts the future Semester marks of students and also plots Linear Regression 
 
 ## 💡 Features
 
-- Derive SY SGPA from FY CGPA instantly
+- Derive SY SGPA from FY CGPA instantly.
 - Show Linear Regression Plot.
 - Beautiful UI.
 
